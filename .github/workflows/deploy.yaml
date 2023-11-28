@@ -1,0 +1,43 @@
+name: Deploy Image through pod
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-and-verify:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Minikube
+      run: |
+        minikube start --driver=docker
+        
+    - name: Deploy to Minikube
+      run: |
+        kubectl apply -f kubernetes/pod.yaml
+        
+    - name: Get Pod Info
+      run: kubectl get pods
+
+    - name: Get Events
+      run: kubectl get events
+
+    - name: View Logs
+      run: |
+        POD_NAME=$(kubectl get pods -o jsonpath="{.items[0].metadata.name}")
+        timeout=60  # Adjust the timeout value as needed
+        interval=2
+        start=$(date +%s)
+        while [[ $(date +%s) -lt $((start + timeout)) ]]; do
+          kubectl logs $POD_NAME
+          sleep $interval
+        done
+
+        
+    - name: Clean up Minikube
+      run: minikube stop
