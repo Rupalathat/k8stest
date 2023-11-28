@@ -16,6 +16,10 @@ jobs:
     - name: Set up Minikube
       run: |
         minikube start --driver=docker
+
+    - name: Download NGINX
+      run: |
+        docker pull nginx:latest
         
     - name: Deploy to Minikube
       run: |
